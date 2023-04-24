@@ -11,6 +11,9 @@ public class Piece extends StackPane {
 
     private double mouseX, mouseY;
     private double oldX, oldY;
+
+    protected String color;
+
     public double getOldX() {
         return oldX;
     }
@@ -18,9 +21,14 @@ public class Piece extends StackPane {
         return oldY;
     }
 
+    public String getColor() {
+        return color;
+    }
+
     public Piece (int x, int y, String player) {
 
         move(x, y);
+        this.color  = player;
 
         Circle circle = new Circle(x, y, viewSize);
         Text text = new Text();

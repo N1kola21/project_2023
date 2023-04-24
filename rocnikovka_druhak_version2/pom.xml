@@ -61,7 +61,7 @@
                         <id>default-cli</id>
                         <configuration>
                             <mainClass>
-                                com.example.rocnikovka_druhak_version2/com.example.rocnikovka_druhak_version2.HelloApplication
+                                com.example.rocnikovka_druhak_version2/com.example.rocnikovka_druhak_version2.GameEngine
                             </mainClass>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>
