@@ -6,6 +6,7 @@ import javafx.scene.text.Text;
 public class Bishop extends Piece{
     public Bishop(int x, int y, String player) {
         super(x, y, player);
+        pieceType = "bishop";
 
         Text text = new Text("B");
         if (player == "black") {

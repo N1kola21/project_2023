@@ -3,6 +3,7 @@ package com.example.rocnikovka_druhak_version2;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
 import static com.example.rocnikovka_druhak_version2.constants.*;
@@ -13,6 +14,7 @@ public class Piece extends StackPane {
     private double oldX, oldY;
 
     protected String color;
+    protected String pieceType;
 
     public double getOldX() {
         return oldX;
@@ -25,10 +27,15 @@ public class Piece extends StackPane {
         return color;
     }
 
+    public String getPieceType() {
+        return pieceType;
+    }
+
     public Piece (int x, int y, String player) {
 
         move(x, y);
-        this.color  = player;
+        this.color = player;
+        this.pieceType = pieceType;
 
         Circle circle = new Circle(x, y, viewSize);
         Text text = new Text();

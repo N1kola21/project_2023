@@ -24,7 +24,6 @@ public class Tile extends Rectangle {
 
         relocate(x * constants.tileSize, y * constants.tileSize);
 
-            setFill((x + y) % 2 == 0 ? Color.valueOf("#769656") : Color.valueOf("#eeeed2"));
-
+            setFill((x + y) % 2 == 0 ? Color.valueOf("#eeeed2") : Color.valueOf("#769656"));
     }
 }

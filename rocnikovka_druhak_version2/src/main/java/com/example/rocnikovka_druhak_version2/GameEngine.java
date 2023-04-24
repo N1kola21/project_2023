@@ -8,6 +8,7 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+
 import static com.example.rocnikovka_druhak_version2.constants.*;
 
 public class GameEngine extends Application {
@@ -15,6 +16,9 @@ public class GameEngine extends Application {
     private Group pieceGroup = new Group();
     private Group tileGroup = new Group();
     private int[][] gameLayout = constantsLayout;
+    private int turn = 1;
+    Tile whiteKingPosition = board[4][7];
+    Tile blackKingPosition = board[4][0];
 
     private void placeTiles(int[][] gameLayout) {
 
@@ -29,12 +33,12 @@ public class GameEngine extends Application {
                 Tile tile = new Tile(x, y);
 
                 //kralove setup
-                if (gameLayout[y][x] == 9) king = pohybKrale(x, y, "white");
-                if (gameLayout[y][x] == 2) king = pohybKrale(x, y, "black");
+                if (gameLayout[y][x] == 8) king = pohybKrale(x, y, "white");
+                if (gameLayout[y][x] == 1) king = pohybKrale(x, y, "black");
 
                 //kralovny setup
-                if (gameLayout[y][x] == 8) queen = pohybKralovny(x, y, "white");
-                if (gameLayout[y][x] == 1) queen = pohybKralovny(x, y, "black");
+                if (gameLayout[y][x] == 9) queen = pohybKralovny(x, y, "white");
+                if (gameLayout[y][x] == 2) queen = pohybKralovny(x, y, "black");
 
                 //věže setup
                 if (gameLayout[y][x] == 12) rook = pohybVeze(x, y, "white");
@@ -85,6 +89,16 @@ public class GameEngine extends Application {
 
     }
 
+    private boolean checkIfMovedPieceIsSupposedToMove(int startX, int startY){
+        if (turn % 2 != 0 && board[startX][startY].getPiece().getColor().equals("black")) {
+            return true;
+        }
+        if (turn % 2 == 0 && board[startX][startY].getPiece().getColor().equals("white")){
+            return true;
+        }
+        return false;
+    }
+
     private boolean OB(int x, int y) {
         return x < 0 || x > height - 1 || y < 0 || y > width - 1;
     }
@@ -97,6 +111,11 @@ public class GameEngine extends Application {
     }
 
     private boolean commonRules(int startX, int startY, int endX, int endY){
+        if (checkIfMovedPieceIsSupposedToMove(startX, startY)){
+            System.out.println("Not this players turn");
+            return false;
+        }
+
         if (OB(endX, endY)) {
             System.out.println("OB");
             return false;
@@ -248,14 +267,17 @@ public class GameEngine extends Application {
             int startY = toBoard(king.getOldY());
 
             boolean legalMove = kingLegalMove(startX, startY, endX, endY);
-            System.out.println("Pohyb " + player +" king ze souřadnic: " + startX + " " + startY + " na souřadnice: " + endX + " " + endY);
-            System.out.println("Pohyb " + legalMove);
+            System.out.println("Pohyb " + player + " " + board[startX][startY].getPiece().getPieceType() +" ze souřadnic: " + startX + " " + startY + " na souřadnice: " + endX + " " + endY);
+            System.out.println("Pohyb " + legalMove + "\n");
             if (legalMove) {
                 captures(startX, startY, endX, endY);
                 king.move(endX, endY);
 
                 board[startX][startY].setPiece(null);
                 board[endX][endY].setPiece(king);
+
+                turn++;
+                System.out.println("turn: " + turn + "\n");
             } else {
                 king.abortMove();
             }
@@ -274,8 +296,8 @@ public class GameEngine extends Application {
             int startY = toBoard(queen.getOldY());
 
             boolean legalMove = queenLegalMove(startX, startY, endX, endY);
-            System.out.println("Pohyb " + player +" queen ze souřadnic: " + startX + " " + startY + " na souřadnice: " + endX + " " + endY);
-            System.out.println("Pohyb " + legalMove);
+            System.out.println("Pohyb " + player + " " + board[startX][startY].getPiece().getPieceType() + " ze souřadnic: " + startX + " " + startY + " na souřadnice: " + endX + " " + endY);
+            System.out.println("Pohyb " + legalMove + "\n");
 
             if (legalMove) {
                 captures(startX, startY, endX, endY);
@@ -284,6 +306,9 @@ public class GameEngine extends Application {
 
                 board[startX][startY].setPiece(null);
                 board[endX][endY].setPiece(queen);
+
+                turn++;
+                System.out.println("turn: " + turn + "\n");
             } else {
                 queen.abortMove();
             }
@@ -302,8 +327,8 @@ public class GameEngine extends Application {
             int startY = toBoard(rook.getOldY());
 
             boolean legalMove = rookLegalMove(startX, startY, endX, endY);
-            System.out.println("Pohyb " + player +" rook ze souřadnic: " + startX + " " + startY + " na souřadnice: " + endX + " " + endY);
-            System.out.println("Pohyb " + legalMove);
+            System.out.println("Pohyb " + player + " " + board[startX][startY].getPiece().getPieceType() + " ze souřadnic: " + startX + " " + startY + " na souřadnice: " + endX + " " + endY);
+            System.out.println("Pohyb " + legalMove + "\n");
 
             if (legalMove) {
                 captures(startX, startY, endX, endY);
@@ -312,6 +337,9 @@ public class GameEngine extends Application {
 
                 board[startX][startY].setPiece(null);
                 board[endX][endY].setPiece(rook);
+
+                turn++;
+                System.out.println("turn: " + turn + "\n");
             } else {
                 rook.abortMove();
             }
@@ -330,8 +358,8 @@ public class GameEngine extends Application {
             int startY = toBoard(bishop.getOldY());
 
             boolean legalMove = bishopLegalMove(startX, startY, endX, endY);
-            System.out.println("Pohyb " + player +" bishop ze souřadnic: " + startX + " " + startY + " na souřadnice: " + endX + " " + endY);
-            System.out.println("Pohyb " + legalMove);
+            System.out.println("Pohyb " + player + " " + board[startX][startY].getPiece().getPieceType() +" ze souřadnic: " + startX + " " + startY + " na souřadnice: " + endX + " " + endY);
+            System.out.println("Pohyb " + legalMove + "\n");
 
 
             if (legalMove) {
@@ -341,6 +369,9 @@ public class GameEngine extends Application {
 
                 board[startX][startY].setPiece(null);
                 board[endX][endY].setPiece(bishop);
+
+                turn++;
+                System.out.println("turn: " + turn + "\n");
             } else {
                 bishop.abortMove();
             }
@@ -359,8 +390,8 @@ public class GameEngine extends Application {
             int startY = toBoard(knight.getOldY());
 
             boolean legalMove = knightLegalMove(startX, startY, endX, endY);
-            System.out.println("Pohyb " + player +" knight ze souřadnic: " + startX + " " + startY + " na souřadnice: " + endX + " " + endY);
-            System.out.println("Pohyb " + legalMove);
+            System.out.println("Pohyb " + player+ " " + board[startX][startY].getPiece().getPieceType() +" ze souřadnic: " + startX + " " + startY + " na souřadnice: " + endX + " " + endY);
+            System.out.println("Pohyb " + legalMove + "\n");
 
             if (legalMove) {
                 captures(startX, startY, endX, endY);
@@ -369,6 +400,9 @@ public class GameEngine extends Application {
 
                 board[startX][startY].setPiece(null);
                 board[endX][endY].setPiece(knight);
+
+                turn++;
+                System.out.println("turn: " + turn + "\n");
             } else {
                 knight.abortMove();
             }
@@ -386,8 +420,8 @@ public class GameEngine extends Application {
             int startY = toBoard(pawn.getOldY());
 
             boolean legalMove = pawnLegalMove(startX, startY, endX, endY);
-            System.out.println("Pohyb " + player +" pawn ze souřadnic: " + startX + " " + startY + " na souřadnice: " + endX + " " + endY);
-            System.out.println("Pohyb " + legalMove);
+            System.out.println("Pohyb " + player + " " + board[startX][startY].getPiece().getPieceType() + " ze souřadnic: " + startX + " " + startY + " na souřadnice: " + endX + " " + endY);
+            System.out.println("Pohyb " + legalMove + "\n");
 
             if (legalMove) {
                 captures(startX, startY, endX, endY);
@@ -396,6 +430,9 @@ public class GameEngine extends Application {
 
                 board[startX][startY].setPiece(null);
                 board[endX][endY].setPiece(pawn);
+
+                turn++;
+                System.out.println("turn: " + turn + "\n");
             } else {
                 pawn.abortMove();
             }

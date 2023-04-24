@@ -6,6 +6,7 @@ import javafx.scene.text.Text;
 public class Knight extends Piece {
     public Knight(int x, int y, String player) {
         super(x, y, player);
+        pieceType = "knight";
 
         Text text = new Text("N");
         if (player == "black") {
