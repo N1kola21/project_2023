@@ -21,6 +21,12 @@ public class GameEngine extends Application {
     Tile blackKingPosition = board[4][0];
     private int tempTurn = 0;
 
+    private int whiteKingX = 4;
+    private int whiteKingY = 7;
+
+    private int blackKingX = 4;
+    private int blackKingY = 0;
+
     private void placeTiles(int[][] gameLayout) {
 
         for (int y = 0; y < height; ++y) {
@@ -90,7 +96,37 @@ public class GameEngine extends Application {
         }
     }
 
-    private boolean isTileAttacked(Piece piece) {
+    private boolean checkIfKingAttacked () {
+        Piece blackKing = board[blackKingX][blackKingY].getPiece();
+        System.out.println(blackKingX + " " + blackKingY);
+
+
+        Piece whiteKing = board[whiteKingX][whiteKingY].getPiece();
+        System.out.println(whiteKingX + " " + whiteKingY);
+
+
+        //check for black king - whites turn
+        if (turn % 2 != 0){
+            System.out.println("checking for black king");
+            if (isPieceAttacked(blackKing)) {
+                System.out.println("step black final");
+                return true;
+            }
+        }
+
+        //check for white king - blacks turn
+        if (turn % 2 == 0){
+            System.out.println("checking for white king");
+            if (isPieceAttacked(whiteKing)) {
+                return true;
+            }
+        }
+
+
+        return false;
+    }
+
+    private boolean isPieceAttacked(Piece piece) {
 
         // piece attacked horizontally or vertically
         if (pieceAttackedHorizontallyOrVertically(piece)) {
@@ -107,59 +143,78 @@ public class GameEngine extends Application {
         int checkX = (int) piece.getOldX() / 100;
         int checkY = (int) piece.getOldY() / 100;
 
+        System.out.println(checkX + " " + checkY);
+        System.out.println(piece.color);
 
-        for (int i = checkX + 1; i < (7 - checkX);){
-            while (!board[i][checkY].hasPiece()){
-                i++;
+
+        for (int i = checkX + 1; i < 8; i++){
+            if (board[i][checkY].getPiece() != null) {
+                if (board[i][checkY].getPiece().getColor().equals(piece.color)){
+                    System.out.println("positive x no attacker");
+                    break;
+                }
+                if (!board[i][checkY].getPiece().getColor().equals(piece.color) &&
+                        (board[i][checkY].getPiece().pieceType.equals("rook") ||
+                                board[i][checkY].getPiece().pieceType.equals("queen"))) {
+                    System.out.println(piece.getColor() + " " + piece.getPieceType() + "is attacked by rook or queen from: "
+                            + "x:" + i + "y: " + checkY);
+                    return true;
+                }
             }
-            if (!board[i][checkY].getPiece().color.equals(piece.color) &&
-                (board[i][checkY].getPiece().pieceType.equals("rook") ||
-                    board[i][checkY].getPiece().pieceType.equals("queen"))) {
-                System.out.println(piece.getColor() + " " +piece.getPieceType() + "is attacked by rook or queen from: "
-                        + "x:" + i + "y: " + checkY);
-                return true;
-            }
+            System.out.println("positive x no attacker");
         }
 
-        for (int i = checkX - 1; i >= 0;){
-            while (board[i][checkY].getPiece() == null){
-                i--;
+        for (int i = checkX - 1; i >= 0; i--){
+            if (board[i][checkY].getPiece() != null) {
+                if (board[checkX][checkY].getPiece().getColor().equals(piece.color)){
+                    System.out.println("negative x no attacker");
+                    break;
+                }
+                if (!board[i][checkY].getPiece().getColor().equals(piece.color) &&
+                        (board[i][checkY].getPiece().pieceType.equals("rook") ||
+                                board[i][checkY].getPiece().pieceType.equals("queen"))) {
+                    System.out.println(piece.getColor() + " " + piece.getPieceType() + "is attacked by rook or queen from: "
+                            + "x:" + i + "y: " + checkY);
+                    return true;
+                }
             }
-            if (!board[i][checkY].getPiece().color.equals(piece.color) &&
-                    (board[i][checkY].getPiece().pieceType.equals("rook") ||
-                            board[i][checkY].getPiece().pieceType.equals("queen"))) {
-                System.out.println(piece.getColor() + " " +piece.getPieceType() + "is attacked by rook or queen from: "
-                        + "x:" + i + "y: " + checkY);
-                return true;
-            }
+            System.out.println("negative x no attacker");
         }
 
-        for (int i = checkY + 1; i < (7 - checkY);){
-            while (board[checkX][i].getPiece() == null){
-                i++;
+        for (int i = checkY + 1; i < 8; i++){
+            if (board[checkX][i].getPiece() != null) {
+                if (board[checkX][checkY].getPiece().getColor().equals(piece.color)){
+                    System.out.println("positive y no attacker");
+                    break;
+                }
+                if (!board[checkX][i].getPiece().getColor().equals(piece.color) &&
+                        (board[checkX][i].getPiece().pieceType.equals("rook") ||
+                                board[checkX][i].getPiece().pieceType.equals("queen"))) {
+                    System.out.println(piece.getColor() + " " + piece.getPieceType() + "is attacked by rook or queen from: "
+                            + "x:" + checkX + "y: " + i);
+                    return true;
+                }
             }
-            if (!board[checkX][i].getPiece().color.equals(piece.color) &&
-                    (board[checkX][i].getPiece().pieceType.equals("rook") ||
-                            board[checkX][i].getPiece().pieceType.equals("queen"))) {
-                System.out.println(piece.getColor() + " " +piece.getPieceType() + "is attacked by rook or queen from: "
-                        + "x:" + checkX + "y: " + i);
-                return true;
-            }
+            System.out.println("positive y no attacker");
         }
 
-        for (int i = checkY - 1; i >= 0;){
-            while (board[checkX][i].getPiece() == null){
-                i--;
+        for (int i = checkY - 1; i >= 0; i--){
+            if (board[checkX][i].getPiece() != null) {
+                if (board[checkX][checkY].getPiece().getColor().equals(piece.color)){
+                    System.out.println("negative y no attacker");
+                    break;
+                }
+                if (!board[checkX][i].getPiece().getColor().equals(piece.color) &&
+                        (board[checkX][i].getPiece().pieceType.equals("rook") ||
+                                board[checkX][i].getPiece().pieceType.equals("queen"))) {
+                    System.out.println(piece.getColor() + " " + piece.getPieceType() + "is attacked by rook or queen from: "
+                            + "x:" + checkX + "y: " + i);
+                    return true;
+                }
             }
-            if (!board[checkX][i].getPiece().color.equals(piece.color) &&
-                    (board[checkX][i].getPiece().pieceType.equals("rook") ||
-                            board[checkX][i].getPiece().pieceType.equals("queen"))) {
-                System.out.println(piece.getColor() + " " +piece.getPieceType() + "is attacked by rook or queen from: "
-                        + "x:" + checkX + "y: " + i);
-                return true;
-            }
+            System.out.println("negative y no attacker");
         }
-
+        System.out.println("king is not in check");
         return false;
     }
 
@@ -330,17 +385,6 @@ public class GameEngine extends Application {
     private King pohybKrale(int x, int y, String player) {
         King king = new King(x, y, player);
 
-        /*
-        if (tempTurn != turn){
-            System.out.println("tempTurn: " + tempTurn);
-            tempTurn++;
-            if (isPieceAttacked(king)) {
-                System.out.println("Check");
-            }
-        }
-
-         */
-
         king.setOnMouseReleased(e -> {
             int endX = toBoard(king.getLayoutX());
             int endY = toBoard(king.getLayoutY());
@@ -354,6 +398,18 @@ public class GameEngine extends Application {
             if (legalMove) {
                 captures(startX, startY, endX, endY);
                 king.move(endX, endY);
+
+                if (board[startX][startY].getPiece().getColor().equals("white")) {
+                    whiteKingX = endX;
+                    whiteKingY = endY;
+                }
+                if (board[startX][startY].getPiece().getColor().equals("black")) {
+                    blackKingX = endX;
+                    blackKingY = endY;
+                }
+                if (checkIfKingAttacked()){
+                    System.out.println("check");
+                }
 
                 board[startX][startY].setPiece(null);
                 board[endX][endY].setPiece(king);
@@ -390,6 +446,10 @@ public class GameEngine extends Application {
                 board[startX][startY].setPiece(null);
                 board[endX][endY].setPiece(queen);
 
+                if (checkIfKingAttacked()){
+                    System.out.println("check");
+                }
+
                 turn++;
                 System.out.println("turn: " + turn + "\n");
             } else {
@@ -420,6 +480,10 @@ public class GameEngine extends Application {
 
                 board[startX][startY].setPiece(null);
                 board[endX][endY].setPiece(rook);
+
+                if (checkIfKingAttacked()){
+                    System.out.println("check");
+                }
 
                 turn++;
                 System.out.println("turn: " + turn + "\n");
@@ -453,6 +517,10 @@ public class GameEngine extends Application {
                 board[startX][startY].setPiece(null);
                 board[endX][endY].setPiece(bishop);
 
+                if (checkIfKingAttacked()){
+                    System.out.println("check");
+                }
+
                 turn++;
                 System.out.println("turn: " + turn + "\n");
             } else {
@@ -484,6 +552,10 @@ public class GameEngine extends Application {
                 board[startX][startY].setPiece(null);
                 board[endX][endY].setPiece(knight);
 
+                if (checkIfKingAttacked()){
+                    System.out.println("check");
+                }
+
                 turn++;
                 System.out.println("turn: " + turn + "\n");
             } else {
@@ -513,6 +585,10 @@ public class GameEngine extends Application {
 
                 board[startX][startY].setPiece(null);
                 board[endX][endY].setPiece(pawn);
+
+                if (checkIfKingAttacked()){
+                    System.out.println("check");
+                }
 
                 turn++;
                 System.out.println("turn: " + turn + "\n");
