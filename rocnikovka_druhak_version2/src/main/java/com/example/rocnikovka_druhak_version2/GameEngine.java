@@ -17,9 +17,9 @@ public class GameEngine extends Application {
     private Group tileGroup = new Group();
     private int[][] gameLayout = constantsLayout;
     private int turn = 1;
-    Tile whiteKingPosition = board[4][7];
-    Tile blackKingPosition = board[4][0];
-    private int tempTurn = 0;
+
+    private int blackIsInCheck = 0;
+    private int whiteIsInCheck = 0;
 
     private int whiteKingX = 4;
     private int whiteKingY = 7;
@@ -96,125 +96,491 @@ public class GameEngine extends Application {
         }
     }
 
+    private boolean moveDoesNotStopCheck(int endX, int endY){
+        if (board[endX][endY].getPiece().getColor().equals("white") && whiteIsInCheck == 1){
+            System.out.println("white is still in check");
+            return true;
+        }
+        if (board[endX][endY].getPiece().getColor().equals("black") && blackIsInCheck == 1){
+            System.out.println("black is still in check");
+            return true;
+        }
+
+        System.out.println("no king is in check");
+        return false;
+    }
+
+
+
     private boolean checkIfKingAttacked () {
         Piece blackKing = board[blackKingX][blackKingY].getPiece();
-        System.out.println(blackKingX + " " + blackKingY);
-
-
         Piece whiteKing = board[whiteKingX][whiteKingY].getPiece();
-        System.out.println(whiteKingX + " " + whiteKingY);
 
-
-        //check for black king - whites turn
-        if (turn % 2 != 0){
-            System.out.println("checking for black king");
-            if (isPieceAttacked(blackKing)) {
-                System.out.println("step black final");
-                return true;
-            }
+        //check for black king
+        System.out.println("checking for black king");
+        if (isPieceAttacked(blackKing)) {
+            blackIsInCheck = 1;
+            return true;
         }
+        System.out.println("black king is not in check");
 
         //check for white king - blacks turn
-        if (turn % 2 == 0){
-            System.out.println("checking for white king");
-            if (isPieceAttacked(whiteKing)) {
-                return true;
-            }
+        System.out.println("checking for white king");
+        if (isPieceAttacked(whiteKing)) {
+            whiteIsInCheck = 1;
+            return true;
         }
+        System.out.println("white king is not in check");
 
-
+        blackIsInCheck = 0;
+        whiteIsInCheck = 0;
         return false;
     }
 
     private boolean isPieceAttacked(Piece piece) {
 
         // piece attacked horizontally or vertically
+        System.out.println("checking hor and ver checks");
         if (pieceAttackedHorizontallyOrVertically(piece)) {
             return true;
         }
 
         // piece attacked diagonally
-        // piece attacked by pawn or king
+        System.out.println("checking diagonal checks");
+        if (pieceAttackedDiagonally(piece)) {
+            return true;
+        }
+        // piece attacked by pawn
+        System.out.println("checking pawn attacks");
+        if (pieceAttackedByPawn(piece)){
+            return true;
+        }
         // piece attacked by knight
+        System.out.println("checking knight attacks");
+        if (pieceAttackedByKnight(piece)){
+            return true;
+        }
 
         return false;
     }
-    private boolean pieceAttackedHorizontallyOrVertically(Piece piece){
+
+    private boolean pieceAttackedByPawn(Piece piece){
+        int checkX = (int) piece.getOldX() / 100;
+        int checkY = (int) piece.getOldY() / 100;
+        System.out.println(checkX + " " + checkY);
+
+        if (piece.getColor().equals("white")){
+            checkY = checkY - 1;
+            try {
+                if (board[checkX + 1][checkY].getPiece() != null &&
+                        board[checkX + 1][checkY].getPiece().getPieceType().equals("pawn") &&
+                        board[checkX + 1][checkY].getPiece().getColor().equals("black")) {
+                    System.out.println(piece.getColor() + " " + piece.getPieceType() + " is attacked by: "
+                            + board[checkX + 1][checkY].getPiece().getColor() + " "
+                            + board[checkX + 1][checkY].getPiece().getPieceType() + "from: "
+                            + (checkX + 1) + " " + checkY);
+                    return true;
+                }
+                if (board[checkX - 1][checkY].getPiece() != null &&
+                        board[checkX - 1][checkY].getPiece().getPieceType().equals("pawn") &&
+                        board[checkX - 1][checkY].getPiece().getColor().equals("black")) {
+                    System.out.println(piece.getColor() + " " + piece.getPieceType() + " is attacked by: "
+                            + board[checkX - 1][checkY].getPiece().getColor() + " "
+                            + board[checkX - 1][checkY].getPiece().getPieceType() + "from: "
+                            + (checkX - 1) + " " + checkY);
+                    return true;
+                }
+            }catch (ArrayIndexOutOfBoundsException e){
+                System.out.println("checked cordinates are OB");
+            }
+        }
+
+        if (piece.getColor().equals("black")){
+            checkY = checkY +1;
+            try {
+                if (board[checkX + 1][checkY].getPiece() != null &&
+                        board[checkX + 1][checkY].getPiece().getPieceType().equals("pawn") &&
+                        board[checkX + 1][checkY].getPiece().getColor().equals("white")) {
+                    System.out.println(piece.getColor() + " " + piece.getPieceType() + " is attacked by: "
+                            + board[checkX + 1][checkY].getPiece().getColor() + " "
+                            + board[checkX + 1][checkY].getPiece().getPieceType() + "from: "
+                            + (checkX + 1) + " " + checkY);
+                    return true;
+                }
+                if (board[checkX - 1][checkY].getPiece() != null &&
+                        board[checkX - 1][checkY].getPiece().getPieceType().equals("pawn") &&
+                        board[checkX - 1][checkY].getPiece().getColor().equals("white")) {
+                    System.out.println(piece.getColor() + " " + piece.getPieceType() + " is attacked by: "
+                            + board[checkX - 1][checkY].getPiece().getColor() + " "
+                            + board[checkX - 1][checkY].getPiece().getPieceType() + "from: "
+                            + (checkX - 1) + " " + checkY);
+                    return true;
+                }
+            }catch (ArrayIndexOutOfBoundsException e){
+                System.out.println("checked cordinates are OB");
+            }
+        }
+
+        return false;
+    }
+
+    private boolean pieceAttackedByKnight(Piece piece){
         int checkX = (int) piece.getOldX() / 100;
         int checkY = (int) piece.getOldY() / 100;
 
-        System.out.println(checkX + " " + checkY);
-        System.out.println(piece.color);
+        try{
+            if (board[checkX + 2][checkY + 1].getPiece() != null) {
+                if (board[checkX + 2][checkY + 1].getPiece().getPieceType().equals("knight") &&
+                        !board[checkX + 2][checkY + 1].getPiece().getColor().equals(piece.getColor())) {
+                    System.out.println(piece.getColor() + " king is attacked by: "
+                            + board[checkX + 2][checkY + 1].getPiece().getColor() + " "
+                            + board[checkX + 2][checkY + 1].getPiece().getPieceType() + " from: "
+                            + (checkX + 2) + " " + (checkY + 1));
+                    return true;
+                }
+            }
+        }catch (ArrayIndexOutOfBoundsException e){
+            System.out.println((checkX + 2) + " " + (checkY + 1) + " is OB");
+        }
+
+        try{
+            if (board[checkX + 2][checkY - 1].getPiece() != null) {
+                if (board[checkX + 2][checkY - 1].getPiece().getPieceType().equals("knight") &&
+                        !board[checkX + 2][checkY - 1].getPiece().getColor().equals(piece.getColor())) {
+                    System.out.println(piece.getColor() + " king is attacked by: "
+                            + board[checkX + 2][checkY - 1].getPiece().getColor() + " "
+                            + board[checkX + 2][checkY - 1].getPiece().getPieceType() + " from: "
+                            + (checkX + 2) + " " + (checkY - 1));
+                    return true;
+                }
+            }
+        }catch (ArrayIndexOutOfBoundsException e){
+            System.out.println((checkX + 2) + " " + (checkY - 1) + " is OB");
+        }
+
+        try{
+            if (board[checkX - 2][checkY + 1].getPiece() != null) {
+                if (board[checkX - 2][checkY + 1].getPiece().getPieceType().equals("knight") &&
+                        !board[checkX - 2][checkY + 1].getPiece().getColor().equals(piece.getColor())) {
+                    System.out.println(piece.getColor() + " king is attacked by: "
+                            + board[checkX - 2][checkY + 1].getPiece().getColor() + " "
+                            + board[checkX - 2][checkY + 1].getPiece().getPieceType() + " from: "
+                            + (checkX - 2) + " " + (checkY + 1));
+                    return true;
+                }
+            }
+        }catch (ArrayIndexOutOfBoundsException e){
+            System.out.println((checkX - 2) + " " + (checkY + 1) + " is OB");
+        }
+
+        try{
+            if (board[checkX - 2][checkY - 1].getPiece() != null) {
+                if (board[checkX - 2][checkY - 1].getPiece().getPieceType().equals("knight") &&
+                        !board[checkX - 2][checkY - 1].getPiece().getColor().equals(piece.getColor())) {
+                    System.out.println(piece.getColor() + " king is attacked by: "
+                            + board[checkX - 2][checkY - 1].getPiece().getColor() + " "
+                            + board[checkX - 2][checkY - 1].getPiece().getPieceType() + " from: "
+                            + (checkX - 2) + " " + (checkY - 1));
+                    return true;
+                }
+            }
+        }catch (ArrayIndexOutOfBoundsException e){
+            System.out.println((checkX - 2) + " " + (checkY - 1) + " is OB");
+        }
+
+        try{
+            if (board[checkX + 1][checkY + 2].getPiece() != null) {
+                if (board[checkX + 1][checkY + 2].getPiece().getPieceType().equals("knight") &&
+                        !board[checkX + 1][checkY + 2].getPiece().getColor().equals(piece.getColor())) {
+                    System.out.println(piece.getColor() + " king is attacked by: "
+                            + board[checkX + 1][checkY + 2].getPiece().getColor() + " "
+                            + board[checkX + 1][checkY + 2].getPiece().getPieceType() + " from: "
+                            + (checkX + 1) + " " + (checkY + 2));
+                    return true;
+                }
+            }
+        }catch (ArrayIndexOutOfBoundsException e){
+            System.out.println((checkX + 1) + " " + (checkY + 2) + " is OB");
+        }
+        try{
+            if (board[checkX + 1][checkY - 2].getPiece() != null) {
+                if (board[checkX + 1][checkY - 2].getPiece().getPieceType().equals("knight") &&
+                        !board[checkX + 1][checkY - 2].getPiece().getColor().equals(piece.getColor())) {
+                    System.out.println(piece.getColor() + " king is attacked by: "
+                            + board[checkX + 1][checkY - 2].getPiece().getColor() + " "
+                            + board[checkX + 1][checkY - 2].getPiece().getPieceType() + " from: "
+                            + (checkX + 1) + " " + (checkY - 2));
+                    return true;
+                }
+            }
+        }catch (ArrayIndexOutOfBoundsException e){
+            System.out.println((checkX + 1) + " " + (checkY - 2) + " is OB");
+        }
+
+        try{
+            if (board[checkX - 1][checkY + 2].getPiece() != null) {
+                if (board[checkX - 1][checkY + 2].getPiece().getPieceType().equals("knight") &&
+                        !board[checkX - 1][checkY + 2].getPiece().getColor().equals(piece.getColor())) {
+                    System.out.println(piece.getColor() + " king is attacked by: "
+                            + board[checkX - 1][checkY + 2].getPiece().getColor() + " "
+                            + board[checkX - 1][checkY + 2].getPiece().getPieceType() + " from: "
+                            + (checkX - 1) + " " + (checkY + 2));
+                    return true;
+                }
+            }
+        }catch (ArrayIndexOutOfBoundsException e){
+            System.out.println((checkX - 1) + " " + (checkY + 2) + " is OB");
+        }
+
+        try{
+            if (board[checkX - 1][checkY - 2].getPiece() != null) {
+                if (board[checkX - 1][checkY - 2].getPiece().getPieceType().equals("knight") &&
+                        !board[checkX - 1][checkY - 2].getPiece().getColor().equals(piece.getColor())) {
+                    System.out.println(piece.getColor() + " king is attacked by: "
+                            + board[checkX - 1][checkY - 2].getPiece().getColor() + " "
+                            + board[checkX - 1][checkY - 2].getPiece().getPieceType() + " from: "
+                            + (checkX - 1) + " " + (checkY - 2));
+                    return true;
+                }
+            }
+        }catch (ArrayIndexOutOfBoundsException e){
+            System.out.println((checkX - 1) + " " + (checkY - 2) + " is OB");
+        }
+
+        return false;
+    }
+
+    private boolean pieceAttackedDiagonally(Piece piece){
+        int checkX = (int) piece.getOldX() / 100;
+        int checkY = (int) piece.getOldY() / 100;
 
 
+        for (int i = 1; checkX + i < 8 && checkY + i < 8; i++) {
+            //check for positive x and positive y
+            if (board[checkX + i][checkY + i].getPiece() != null) {
+                if (board[checkX + i][checkY + i].getPiece().getColor().equals(piece.color)) {
+                    System.out.println(board[checkX + i][checkY + i].getPiece().getColor() + " "
+                            + board[checkX + i][checkY + i].getPiece().getPieceType() + (checkX + i) + " " + (checkY + i)
+                            + " is the same color");
+                    break;
+                }
+
+                if (!board[checkX + i][checkY + i].getPiece().getColor().equals(piece.color)) {
+                    if (board[checkX + i][checkY + i].getPiece().getPieceType().equals("queen") ||
+                            board[checkX + i][checkY + i].getPiece().getPieceType().equals("bishop")) {
+                        System.out.println(piece.getPieceType() + " " + piece.getColor() + " is attacked by: "
+                                + board[checkX + i][checkY + i].getPiece().getColor() + " "
+                                + board[checkX + i][checkY + i].getPiece().getPieceType()
+                                + " from: " + (checkX + i) + " " + (checkY + i));
+                        return true;
+                    }
+                    System.out.println(board[checkX + i][checkY + i].getPiece().getPieceType()
+                            + board[checkX + i][checkY + i].getPiece().getColor()
+                            + (checkX + i) + " " + (checkY + i) + " is not the right piece type");
+                    break;
+                }
+                System.out.println((checkX + i) + " " + (checkY + i) + " no attacker");
+            }
+        }
+
+            //check for positive x and negative y
+        for (int i = 1; checkX + i < 8 && checkY - i >= 0; i++) {
+            if (board[checkX + i][checkY - i].getPiece() != null) {
+                if (board[checkX + i][checkY - i].getPiece().getColor().equals(piece.color)) {
+                    System.out.println(board[checkX + i][checkY - i].getPiece().getColor() + " "
+                            + board[checkX + i][checkY - i].getPiece().getPieceType() + (checkX + i) + " " + (checkY - i)
+                            + " is the same color");
+                    break;
+                }
+                if (!board[checkX + i][checkY - i].getPiece().getColor().equals(piece.color)) {
+                        if (board[checkX + i][checkY - i].getPiece().getPieceType().equals("queen") ||
+                                board[checkX + i][checkY - i].getPiece().getPieceType().equals("bishop")){
+                        System.out.println(piece.getPieceType() + " " + piece.getColor() + " is attacked by: "
+                                + board[checkX + i][checkY - i].getPiece().getColor() + " "
+                                + board[checkX + i][checkY - i].getPiece().getPieceType()
+                                + " from: " + (checkX + i) + " " + (checkY - i));
+                        return true;
+                    }
+                    System.out.println(board[checkX + i][checkY - i].getPiece().getPieceType()
+                            + board[checkX + i][checkY - i].getPiece().getColor()
+                            + (checkX + i) + " " + (checkY - i) + " is not the right piece type");
+                    break;
+                }
+                System.out.println((checkX + i) + " " + (checkY - i) + " no attacker");
+            }
+        }
+
+            //check for negative x and positive y
+        for (int i = 1; checkX - i >= 0 && checkY + i < 8; i++) {
+            if (board[checkX - i][checkY + i].getPiece() != null) {
+                if (board[checkX - i][checkY + i].getPiece().getColor().equals(piece.color)) {
+                    System.out.println(board[checkX - i][checkY + i].getPiece().getColor() + " "
+                            + board[checkX - i][checkY + i].getPiece().getPieceType()
+                            + (checkX - i) + " " + (checkY + i)
+                            + "is the same color");
+                    break;
+                }
+                if (!board[checkX - i][checkY + i].getPiece().getColor().equals(piece.color)) {
+                    if (board[checkX - i][checkY + i].getPiece().getPieceType().equals("queen") ||
+                            board[checkX - i][checkY + i].getPiece().getPieceType().equals("bishop")) {
+                        System.out.println(piece.getPieceType() + " " + piece.getColor() + " is attacked by: "
+                                + board[checkX - i][checkY + i].getPiece().getColor() + " "
+                                + board[checkX - i][checkY + i].getPiece().getPieceType()
+                                + " from: " + (checkX - i) + " " + (checkY + i));
+                        return true;
+                    }
+                    System.out.println(board[checkX - i][checkY + i].getPiece().getPieceType()
+                            + board[checkX - i][checkY + i].getPiece().getColor()
+                            + (checkX - i) + " " + (checkY + i) + " is not the right piece type");
+                    break;
+                }
+                System.out.println((checkX - i) + " " + (checkY + i) + " no attacker");
+            }
+        }
+
+            //check for negative x and negative y
+        for (int i = 1; checkX - i >= 0 && checkY - i >= 0; i++) {
+            if (board[checkX - i][checkY - i].getPiece() != null){
+                if (board[checkX - i][checkY - i].getPiece().getColor().equals(piece.color)){
+                    System.out.println(board[checkX - i][checkY - i].getPiece().getColor() + " "
+                            + board[checkX - i][checkY - i].getPiece().getPieceType()
+                            + (checkX - i) + " " + (checkY - i)
+                            + "is the same color");
+                    break;
+                }
+                if (!board[checkX - i][checkY - i].getPiece().getColor().equals(piece.color)) {
+                        if (board[checkX - i][checkY - i].getPiece().getPieceType().equals("queen") ||
+                                board[checkX - i][checkY - i].getPiece().getPieceType().equals("bishop")){
+                        System.out.println(piece.getPieceType() + " " + piece.getColor() + " is attacked by: "
+                                + board[checkX - i][checkY - i].getPiece().getColor() + " "
+                                + board[checkX - i][checkY - i].getPiece().getPieceType()
+                                + " from: " + (checkX - i) + " " + (checkY - i));
+                        return true;
+                    }
+                    System.out.println(board[checkX - i][checkY - i].getPiece().getPieceType()
+                            + board[checkX - i][checkY - i].getPiece().getColor()
+                            + (checkX - i) + " " + (checkY - i) + " is not the right piece type");
+                    break;
+                }
+                System.out.println((checkX - i) + " " + (checkY - i) + " no attacker");
+            }
+        }
+        return false;
+    }
+
+    private boolean pieceAttackedHorizontallyOrVertically(Piece piece){
+        int checkX = (int) piece.getOldX() / 100;
+        int checkY = (int) piece.getOldY() / 100;
+        System.out.println(checkX + " " + checkY + piece.getColor());
+
+        // !board[i][checkY].getPiece().getPieceType().equals("rook")
+        // !board[i][checkY].getPiece().getPieceType().equals("queen")
+
+        //check positive X
         for (int i = checkX + 1; i < 8; i++){
             if (board[i][checkY].getPiece() != null) {
+
                 if (board[i][checkY].getPiece().getColor().equals(piece.color)){
-                    System.out.println("positive x no attacker");
+                    System.out.println(board[i][checkY].getPiece().getColor() + " "
+                            + board[i][checkY].getPiece().getPieceType() + " " + i + " " + checkY + " is the same color");
                     break;
                 }
-                if (!board[i][checkY].getPiece().getColor().equals(piece.color) &&
-                        (board[i][checkY].getPiece().pieceType.equals("rook") ||
-                                board[i][checkY].getPiece().pieceType.equals("queen"))) {
-                    System.out.println(piece.getColor() + " " + piece.getPieceType() + "is attacked by rook or queen from: "
-                            + "x:" + i + "y: " + checkY);
-                    return true;
+
+                if (!board[i][checkY].getPiece().getColor().equals(piece.color)){
+                    if ((board[i][checkY].getPiece().getPieceType().equals("rook") ||
+                            board[i][checkY].getPiece().getPieceType().equals("queen"))) {
+                        System.out.println(piece.getColor() + " " + piece.getPieceType() + " is attacked by "
+                                + board[i][checkY].getPiece().getColor() + " "
+                                + board[i][checkY].getPiece().getColor()
+                                +" from: " + "x:" + i + " y: " + checkY);
+                        return true;
+                }
+                    System.out.println(board[i][checkY].getPiece().getColor() + " "
+                            + board[i][checkY].getPiece().getPieceType() + " " + i + " " + checkY
+                            + " is not the right piece type");
+                    break;
                 }
             }
-            System.out.println("positive x no attacker");
+            System.out.println(i + " " + checkY + " no attacker");
         }
 
+        //check negative x
         for (int i = checkX - 1; i >= 0; i--){
             if (board[i][checkY].getPiece() != null) {
-                if (board[checkX][checkY].getPiece().getColor().equals(piece.color)){
-                    System.out.println("negative x no attacker");
+                if (board[i][checkY].getPiece().getColor().equals(piece.color)){
+                    System.out.println(board[i][checkY].getPiece().getColor() + " "
+                            + board[i][checkY].getPiece().getPieceType() + " " + i + " " + checkY + " is the same color");
                     break;
                 }
-                if (!board[i][checkY].getPiece().getColor().equals(piece.color) &&
-                        (board[i][checkY].getPiece().pieceType.equals("rook") ||
-                                board[i][checkY].getPiece().pieceType.equals("queen"))) {
-                    System.out.println(piece.getColor() + " " + piece.getPieceType() + "is attacked by rook or queen from: "
-                            + "x:" + i + "y: " + checkY);
-                    return true;
+
+                if (!board[i][checkY].getPiece().getColor().equals(piece.color)){
+                    if ((board[i][checkY].getPiece().getPieceType().equals("rook") ||
+                            board[i][checkY].getPiece().getPieceType().equals("queen"))) {
+                        System.out.println(piece.getColor() + " " + piece.getPieceType() + "is attacked by "
+                                + board[i][checkY].getPiece().getColor() + " "
+                                + board[i][checkY].getPiece().getPieceType()
+                                +" from: " + "x:" + i + " y: " + checkY);
+                        return true;
+                    }
+                    System.out.println(board[i][checkY].getPiece().getColor() + " "
+                            + board[i][checkY].getPiece().getPieceType() + " " + i + " " + checkY
+                            + " is not the right piece type");
+                    break;
                 }
             }
-            System.out.println("negative x no attacker");
+            System.out.println(i + " " + checkY + " no attacker");
         }
 
+        //check positive y
         for (int i = checkY + 1; i < 8; i++){
             if (board[checkX][i].getPiece() != null) {
-                if (board[checkX][checkY].getPiece().getColor().equals(piece.color)){
-                    System.out.println("positive y no attacker");
+                if (board[checkX][i].getPiece().getColor().equals(piece.color)){
+                    System.out.println(board[checkX][i].getPiece().getColor() + " "
+                            + board[checkX][i].getPiece().getPieceType() + " " + checkX + " " + i + " is the same color");
                     break;
                 }
-                if (!board[checkX][i].getPiece().getColor().equals(piece.color) &&
-                        (board[checkX][i].getPiece().pieceType.equals("rook") ||
-                                board[checkX][i].getPiece().pieceType.equals("queen"))) {
-                    System.out.println(piece.getColor() + " " + piece.getPieceType() + "is attacked by rook or queen from: "
-                            + "x:" + checkX + "y: " + i);
-                    return true;
+                if (!board[checkX][i].getPiece().getColor().equals(piece.color)) {
+                    if ((board[checkX][i].getPiece().getPieceType().equals("rook") ||
+                            board[checkX][i].getPiece().getPieceType().equals("queen"))) {
+                        System.out.println(piece.getColor() + " " + piece.getPieceType() + " is attacked by: "
+                                + board[checkX][i].getPiece().getColor() + " "
+                                + board[checkX][i].getPiece().getPieceType()
+                                + " from: " + "x: " + checkX + " y: " + i);
+                        return true;
+                    }
+                    System.out.println(board[checkX][i].getPiece().getColor() + " "
+                            + board[checkX][i].getPiece().getPieceType() + " " + checkX + " " + i
+                            + " is not the right piece type");
+                    break;
                 }
             }
-            System.out.println("positive y no attacker");
+            System.out.println(checkX+ " " + i + " no attacker");
         }
-
+        //check negative y
         for (int i = checkY - 1; i >= 0; i--){
             if (board[checkX][i].getPiece() != null) {
-                if (board[checkX][checkY].getPiece().getColor().equals(piece.color)){
-                    System.out.println("negative y no attacker");
+                if (board[checkX][i].getPiece().getColor().equals(piece.color)){
+                    System.out.println(board[checkX][i].getPiece().getColor() + " "
+                            + board[checkX][i].getPiece().getPieceType() + " " + checkX + " " + i + " is the same color");
                     break;
                 }
-                if (!board[checkX][i].getPiece().getColor().equals(piece.color) &&
-                        (board[checkX][i].getPiece().pieceType.equals("rook") ||
-                                board[checkX][i].getPiece().pieceType.equals("queen"))) {
-                    System.out.println(piece.getColor() + " " + piece.getPieceType() + "is attacked by rook or queen from: "
-                            + "x:" + checkX + "y: " + i);
-                    return true;
+                if (!board[checkX][i].getPiece().getColor().equals(piece.color)) {
+                    if ((board[checkX][i].getPiece().getPieceType().equals("rook") ||
+                            board[checkX][i].getPiece().getPieceType().equals("queen"))) {
+                        System.out.println(piece.getColor() + " " + piece.getPieceType() + " is attacked by: "
+                                + board[checkX][i].getPiece().getColor() + " "
+                                + board[checkX][i].getPiece().getPieceType()
+                                + " from: " + "x: " + checkX + " y: " + i);
+                        return true;
+                    }
+                    System.out.println(board[checkX][i].getPiece().getColor() + " "
+                            + board[checkX][i].getPiece().getPieceType() + " " + checkX + " " + i
+                            + " is not the right piece type");
+                    break;
                 }
             }
-            System.out.println("negative y no attacker");
+            System.out.println(checkX+ " " + i + " no attacker");
         }
-        System.out.println("king is not in check");
         return false;
     }
 
@@ -253,6 +619,7 @@ public class GameEngine extends Application {
             System.out.println("nemůže brát vlastní pieces");
             return false;
         }
+
         return true;
     }
 
@@ -355,8 +722,8 @@ public class GameEngine extends Application {
                 System.out.println("moc daleko, not starting pos");
                 return false;
             }
-            if (startY == 6 && Math.abs(startY - endY) > 2){
-                System.out.println("moc daleko, starting pos");
+            if (startY == 6 && Math.abs(startY - endY) > 2 || board[startX][5].hasPiece()){
+                System.out.println("moc daleko or a piece in way, starting pos");
                 return false;
             }
         }
@@ -369,8 +736,8 @@ public class GameEngine extends Application {
                 System.out.println("moc daleko, not starting pos");
                 return false;
             }
-            if (startY == 1 && Math.abs(startY - endY) > 2){
-                System.out.println("moc daleko, starting pos");
+            if (startY == 1 && Math.abs(startY - endY) > 2 || board[startX][2].hasPiece()){
+                System.out.println("moc daleko or a piece in the way, starting pos");
                 return false;
             }
         }
@@ -399,20 +766,40 @@ public class GameEngine extends Application {
                 captures(startX, startY, endX, endY);
                 king.move(endX, endY);
 
-                if (board[startX][startY].getPiece().getColor().equals("white")) {
+                board[startX][startY].setPiece(null);
+                board[endX][endY].setPiece(king);
+
+                if (board[endX][endY].getPiece().getColor().equals("white")) {
                     whiteKingX = endX;
                     whiteKingY = endY;
                 }
-                if (board[startX][startY].getPiece().getColor().equals("black")) {
+                if (board[endX][endY].getPiece().getColor().equals("black")) {
                     blackKingX = endX;
                     blackKingY = endY;
                 }
+                //nepovolí tah pokud neodchází
+                if (checkIfKingAttacked() && moveDoesNotStopCheck(endX, endY)){
+                    turn--;
+
+                    king.move(startX, startY);
+                    board[startX][startY].setPiece(king);
+                    board[endX][endY].setPiece(null);
+
+                    String tempColor = king.getColor();
+
+                    if (tempColor.equals("white")){
+                        whiteKingX = startX;
+                        whiteKingY = startY;
+                    }
+                    if (tempColor.equals("black")){
+                        blackKingX = startX;
+                        blackKingY = startY;
+                    }
+                }
+
                 if (checkIfKingAttacked()){
                     System.out.println("check");
                 }
-
-                board[startX][startY].setPiece(null);
-                board[endX][endY].setPiece(king);
 
                 turn++;
                 System.out.println("turn: " + turn + "\n");
@@ -445,6 +832,13 @@ public class GameEngine extends Application {
 
                 board[startX][startY].setPiece(null);
                 board[endX][endY].setPiece(queen);
+                if (checkIfKingAttacked() && moveDoesNotStopCheck(endX, endY)){
+                    turn--;
+
+                    queen.move(startX, startY);
+                    board[startX][startY].setPiece(queen);
+                    board[endX][endY].setPiece(null);
+                }
 
                 if (checkIfKingAttacked()){
                     System.out.println("check");
@@ -480,6 +874,13 @@ public class GameEngine extends Application {
 
                 board[startX][startY].setPiece(null);
                 board[endX][endY].setPiece(rook);
+                if (checkIfKingAttacked() && moveDoesNotStopCheck(endX, endY)){
+                    turn--;
+
+                    rook.move(startX, startY);
+                    board[startX][startY].setPiece(rook);
+                    board[endX][endY].setPiece(null);
+                }
 
                 if (checkIfKingAttacked()){
                     System.out.println("check");
@@ -516,6 +917,13 @@ public class GameEngine extends Application {
 
                 board[startX][startY].setPiece(null);
                 board[endX][endY].setPiece(bishop);
+                if (checkIfKingAttacked() && moveDoesNotStopCheck(endX, endY)){
+                    turn--;
+
+                    bishop.move(startX, startY);
+                    board[startX][startY].setPiece(bishop);
+                    board[endX][endY].setPiece(null);
+                }
 
                 if (checkIfKingAttacked()){
                     System.out.println("check");
@@ -551,6 +959,13 @@ public class GameEngine extends Application {
 
                 board[startX][startY].setPiece(null);
                 board[endX][endY].setPiece(knight);
+                if (checkIfKingAttacked() && moveDoesNotStopCheck(endX, endY)){
+                    turn--;
+
+                    knight.move(startX, startY);
+                    board[startX][startY].setPiece(knight);
+                    board[endX][endY].setPiece(null);
+                }
 
                 if (checkIfKingAttacked()){
                     System.out.println("check");
@@ -585,6 +1000,13 @@ public class GameEngine extends Application {
 
                 board[startX][startY].setPiece(null);
                 board[endX][endY].setPiece(pawn);
+                if (checkIfKingAttacked() && moveDoesNotStopCheck(endX, endY)){
+                    turn--;
+
+                    pawn.move(startX, startY);
+                    board[startX][startY].setPiece(pawn);
+                    board[endX][endY].setPiece(null);
+                }
 
                 if (checkIfKingAttacked()){
                     System.out.println("check");
